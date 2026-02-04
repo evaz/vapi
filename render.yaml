@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: vapi-hubspot-agent
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VAPI_API_KEY
+        sync: false
+      - key: HUBSPOT_API_KEY
+        sync: false
+      - key: WEBHOOK_BASE_URL
+        sync: false
+      - key: EVENT_NAME
+        sync: false
+    healthCheckPath: /health
