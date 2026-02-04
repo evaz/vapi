@@ -1,6 +1,7 @@
 import { Client } from '@hubspot/api-client';
+import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
 import { config } from './config';
-import type { LeadInfo, HubSpotContactProperties } from './types';
+import type { LeadInfo } from './types';
 
 const hubspotClient = config.hubspotApiKey
   ? new Client({ accessToken: config.hubspotApiKey })
@@ -15,7 +16,8 @@ export async function createOrUpdateContact(lead: LeadInfo, phoneNumber: string)
     console.log('HubSpot disabled - lead data:', JSON.stringify(lead, null, 2));
     return null;
   }
-  const properties: HubSpotContactProperties = {
+
+  const properties: Record<string, string> = {
     firstname: lead.firstName,
     lastname: lead.lastName,
     email: lead.email,
@@ -53,6 +55,10 @@ export async function createOrUpdateContact(lead: LeadInfo, phoneNumber: string)
 }
 
 async function findContactByEmail(email: string): Promise<string | null> {
+  if (!hubspotClient) {
+    return null;
+  }
+
   try {
     const response = await hubspotClient.crm.contacts.searchApi.doSearch({
       filterGroups: [
@@ -60,7 +66,7 @@ async function findContactByEmail(email: string): Promise<string | null> {
           filters: [
             {
               propertyName: 'email',
-              operator: 'EQ',
+              operator: FilterOperatorEnum.Eq,
               value: email,
             },
           ],

@@ -94,7 +94,7 @@ export async function createAssistant(assistantConfig: VapiAssistantConfig): Pro
     throw new Error(`Failed to create assistant: ${error}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { id: string };
   console.log('Created Vapi assistant:', data.id);
   return data.id;
 }
@@ -133,5 +133,5 @@ export async function listAssistants(): Promise<Array<{ id: string; name: string
     throw new Error(`Failed to list assistants: ${error}`);
   }
 
-  return response.json();
+  return (await response.json()) as Array<{ id: string; name: string }>;
 }
