@@ -2,9 +2,19 @@ import { Client } from '@hubspot/api-client';
 import { config } from './config';
 import type { LeadInfo, HubSpotContactProperties } from './types';
 
-const hubspotClient = new Client({ accessToken: config.hubspotApiKey });
+const hubspotClient = config.hubspotApiKey
+  ? new Client({ accessToken: config.hubspotApiKey })
+  : null;
 
-export async function createOrUpdateContact(lead: LeadInfo, phoneNumber: string): Promise<string> {
+export function isHubSpotEnabled(): boolean {
+  return !!hubspotClient;
+}
+
+export async function createOrUpdateContact(lead: LeadInfo, phoneNumber: string): Promise<string | null> {
+  if (!hubspotClient) {
+    console.log('HubSpot disabled - lead data:', JSON.stringify(lead, null, 2));
+    return null;
+  }
   const properties: HubSpotContactProperties = {
     firstname: lead.firstName,
     lastname: lead.lastName,
@@ -72,6 +82,11 @@ async function findContactByEmail(email: string): Promise<string | null> {
 }
 
 export async function testHubSpotConnection(): Promise<boolean> {
+  if (!hubspotClient) {
+    console.log('HubSpot integration disabled');
+    return false;
+  }
+
   try {
     await hubspotClient.crm.contacts.basicApi.getPage(1);
     console.log('HubSpot connection successful');

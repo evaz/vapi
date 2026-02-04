@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { config, validateConfig } from './config';
-import { createOrUpdateContact, testHubSpotConnection } from './hubspot';
+import { createOrUpdateContact, testHubSpotConnection, isHubSpotEnabled } from './hubspot';
 import type { LeadInfo, VapiMessage } from './types';
 
 const app = express();
@@ -77,7 +77,11 @@ async function handleSaveLead(message: VapiMessage): Promise<{ result: string }>
 
   try {
     const contactId = await createOrUpdateContact(lead, lead.phone);
-    console.log(`Lead saved successfully. HubSpot contact ID: ${contactId}`);
+    if (contactId) {
+      console.log(`Lead saved successfully. HubSpot contact ID: ${contactId}`);
+    } else {
+      console.log('Lead captured (HubSpot disabled)');
+    }
     return {
       result: `Successfully saved your information. Our team will follow up with you soon at ${lead.email}. Is there anything else I can help you with?`,
     };
@@ -95,10 +99,14 @@ async function start(): Promise<void> {
   try {
     validateConfig();
 
-    // Test HubSpot connection
-    const hubspotConnected = await testHubSpotConnection();
-    if (!hubspotConnected) {
-      console.warn('Warning: Could not connect to HubSpot. Check your API key.');
+    // Test HubSpot connection if enabled
+    if (isHubSpotEnabled()) {
+      const hubspotConnected = await testHubSpotConnection();
+      if (!hubspotConnected) {
+        console.warn('Warning: Could not connect to HubSpot. Check your API key.');
+      }
+    } else {
+      console.log('HubSpot integration disabled - leads will be logged only');
     }
 
     app.listen(config.port, () => {

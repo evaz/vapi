@@ -12,10 +12,11 @@ export const config = {
 };
 
 export function validateConfig(): void {
-  const required = ['vapiApiKey', 'hubspotApiKey'] as const;
-  const missing = required.filter((key) => !config[key]);
+  if (!config.vapiApiKey) {
+    throw new Error('Missing required environment variable: VAPI_API_KEY');
+  }
 
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  if (!config.hubspotApiKey) {
+    console.warn('Warning: HUBSPOT_API_KEY not set. HubSpot integration disabled.');
   }
 }
