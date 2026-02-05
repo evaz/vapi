@@ -48,6 +48,11 @@ export interface VapiAssistantConfig {
     provider: string;
     voiceId: string;
   };
+  transcriber?: {
+    provider: string;
+    model: string;
+    language: string;
+  };
   firstMessage: string;
   serverUrl: string;
   serverUrlSecret?: string;

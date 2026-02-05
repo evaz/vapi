@@ -1,6 +1,8 @@
 import { config, validateConfig } from '../src/config';
 import { createAssistant, updateAssistant, listAssistants, getAssistantConfig } from '../src/vapi';
 
+const ASSISTANT_NAME = 'Event Lead Collector';
+
 async function setup(): Promise<void> {
   try {
     validateConfig();
@@ -12,20 +14,23 @@ async function setup(): Promise<void> {
     }
 
     const webhookUrl = `${config.webhookBaseUrl}/vapi/webhook`;
-    const assistantConfig = getAssistantConfig(webhookUrl);
 
     console.log('Checking for existing assistants...');
     const existingAssistants = await listAssistants();
-    const existingAssistant = existingAssistants.find((a) => a.name === assistantConfig.name);
+    const existingAssistant = existingAssistants.find((a) => a.name === ASSISTANT_NAME);
 
     if (existingAssistant) {
+      // Only update the webhook URL - preserve all other dashboard settings
       console.log(`Found existing assistant: ${existingAssistant.id}`);
-      console.log('Updating assistant configuration...');
-      await updateAssistant(existingAssistant.id, assistantConfig);
-      console.log('Assistant updated successfully!');
+      console.log('Updating webhook URL only (preserving dashboard settings)...');
+      await updateAssistant(existingAssistant.id, { serverUrl: webhookUrl });
+      console.log('Webhook URL updated successfully!');
       console.log(`Assistant ID: ${existingAssistant.id}`);
+      console.log(`Webhook URL: ${webhookUrl}`);
     } else {
+      // Create new assistant with full config
       console.log('Creating new assistant...');
+      const assistantConfig = getAssistantConfig(webhookUrl);
       const assistantId = await createAssistant(assistantConfig);
       console.log('Assistant created successfully!');
       console.log(`Assistant ID: ${assistantId}`);
