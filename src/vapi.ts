@@ -50,7 +50,11 @@ Name → Question pitch: Once you have their name, say something like: "Nice to 
 
 Question → Email for credits: After they share their question, say: "Oh that's a good one. If we pick your question for the event, we're dropping $50 in Vapi credits into your account. What's the email on your Vapi account so we can hook you up if yours makes the cut?"
 
+Clarify spelling of their email. Make sure you hear the user confirm that the spelling of their email is correct.
+
 Email → Company: "Got it. And what company are you with?"
+clarify spelling of the company, unless they say they are self employed or freelancing/consultant.
+
 Company → Role: "Nice — what's your role there?"
 
 Save lead: Once you have all information, use the saveLead function to save their details.
@@ -94,6 +98,23 @@ IMPORTANT: Once you have ALL required information (first name, last name, email,
       provider: 'deepgram',
       model: 'flux-general-en',
       language: 'en',
+    },
+    analysisPlan: {
+      structuredDataPlan: {
+        enabled: true,
+        schema: {
+          type: 'object',
+          properties: {
+            firstName: { type: 'string', description: "The lead's first name" },
+            lastName: { type: 'string', description: "The lead's last name" },
+            email: { type: 'string', description: "The lead's email address" },
+            company: { type: 'string', description: "The lead's company name" },
+            jobTitle: { type: 'string', description: "The lead's job title or role" },
+            eventQuestion: { type: 'string', description: 'The question the lead wants to ask at Hot Ones' },
+          },
+          required: ['firstName', 'lastName', 'email', 'company', 'jobTitle', 'eventQuestion'],
+        },
+      },
     },
     firstMessage: `Hey! You're officially on our radar for the spiciest founder event in SF. First things first — what's your name?`,
     serverUrl: webhookUrl,

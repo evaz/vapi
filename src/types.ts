@@ -53,6 +53,16 @@ export interface VapiAssistantConfig {
     model: string;
     language: string;
   };
+  analysisPlan?: {
+    structuredDataPlan?: {
+      enabled: boolean;
+      schema: {
+        type: string;
+        properties: Record<string, { type: string; description: string }>;
+        required: string[];
+      };
+    };
+  };
   firstMessage: string;
   serverUrl: string;
   serverUrlSecret?: string;
