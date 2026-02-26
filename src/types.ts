@@ -61,11 +61,20 @@ export interface VapiAssistantConfig {
         properties: Record<string, { type: string; description: string }>;
         required: string[];
       };
+      messages?: Array<{ role: string; content: string }>;
     };
+  };
+  artifactPlan?: {
+    structuredOutputIds?: string[];
+    scorecardIds?: string[];
   };
   firstMessage: string;
   serverUrl: string;
   serverUrlSecret?: string;
+  server?: {
+    url: string;
+    timeoutSeconds?: number;
+  };
 }
 
 export interface VapiFunction {
