@@ -9,6 +9,8 @@ export const config = {
   webhookBaseUrl: process.env.WEBHOOK_BASE_URL || '',
   webhookSecret: process.env.WEBHOOK_SECRET || '',
   eventName: process.env.EVENT_NAME || 'our upcoming event',
+  syncIntervalMs: parseInt(process.env.SYNC_INTERVAL_MS || '300000', 10),
+  vapiBackfillSessionId: process.env.VAPI_BACKFILL_SESSION_ID || '',
 };
 
 export function validateConfig(): void {

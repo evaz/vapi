@@ -1,43 +1,10 @@
 import { config } from './config';
-import type { VapiAssistantConfig, VapiFunction } from './types';
+import type { VapiAssistantConfig } from './types';
 
 const VAPI_API_URL = 'https://api.vapi.ai';
 
-const saveLead: VapiFunction = {
-  name: 'saveLead',
-  description:
-    'Save the collected lead information to the database. Call this when you have collected all the required information: first name, last name, email, company, job title, and their event questions or topics of interest.',
-  parameters: {
-    type: 'object',
-    properties: {
-      firstName: {
-        type: 'string',
-        description: "The lead's first name",
-      },
-      lastName: {
-        type: 'string',
-        description: "The lead's last name",
-      },
-      email: {
-        type: 'string',
-        description: "The lead's email address",
-      },
-      company: {
-        type: 'string',
-        description: "The lead's company name",
-      },
-      jobTitle: {
-        type: 'string',
-        description: "The lead's job title or role",
-      },
-      eventQuestions: {
-        type: 'string',
-        description: "The lead's questions about the event or topics they're interested in",
-      },
-    },
-    required: ['firstName', 'lastName', 'email', 'company', 'jobTitle', 'eventQuestions'],
-  },
-};
+// Google Sheets tool ID for append_lead_row_v2 (managed in Vapi dashboard)
+const SHEETS_TOOL_ID = '0227ae74-57bd-4df6-910e-14868c7d96f3';
 
 export function getAssistantConfig(webhookUrl: string): VapiAssistantConfig {
   const systemPrompt = `You are a friendly event assistant helping collect information from attendees interested in Hot Ones. Your goal is to have a natural conversation while gathering their contact details and learning about their interests.
@@ -87,7 +54,7 @@ IMPORTANT: Once you have ALL required information (first name, last name, email,
       model: 'gpt-4o-mini',
       temperature: 0.2,
       systemPrompt,
-      functions: [saveLead],
+      toolIds: [SHEETS_TOOL_ID],
     },
     voice: {
       provider: 'vapi',

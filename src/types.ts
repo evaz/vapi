@@ -42,7 +42,7 @@ export interface VapiAssistantConfig {
     model: string;
     temperature: number;
     systemPrompt: string;
-    functions: VapiFunction[];
+    toolIds?: string[];
   };
   voice: {
     provider: string;

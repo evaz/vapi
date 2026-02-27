@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { config, validateConfig } from './config';
 import { createOrUpdateContact, testHubSpotConnection, isHubSpotEnabled } from './hubspot';
+import { syncLeadsToSheets } from './sync-leads';
 import type { LeadInfo, VapiMessage } from './types';
 
 const app = express();
@@ -12,6 +13,17 @@ const activeConversations = new Map<string, Partial<LeadInfo> & { phoneNumber: s
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Manual sync trigger
+app.get('/sync', async (_req: Request, res: Response) => {
+  try {
+    await syncLeadsToSheets();
+    res.json({ status: 'ok', message: 'Sync completed' });
+  } catch (error) {
+    console.error('Manual sync failed:', error);
+    res.status(500).json({ error: 'Sync failed' });
+  }
 });
 
 // Main Vapi webhook endpoint
@@ -113,6 +125,15 @@ async function start(): Promise<void> {
       console.log(`Server running on port ${config.port}`);
       console.log(`Webhook URL: ${config.webhookBaseUrl}/vapi/webhook`);
       console.log(`Health check: ${config.webhookBaseUrl}/health`);
+
+      // Start periodic lead sync to Google Sheets
+      if (config.syncIntervalMs > 0 && config.vapiBackfillSessionId) {
+        console.log(`[SYNC] Enabled — syncing every ${config.syncIntervalMs / 1000}s`);
+        setTimeout(() => syncLeadsToSheets(), 30_000); // First run after 30s
+        setInterval(() => syncLeadsToSheets(), config.syncIntervalMs);
+      } else {
+        console.log('[SYNC] Disabled — set SYNC_INTERVAL_MS and VAPI_BACKFILL_SESSION_ID to enable');
+      }
     });
   } catch (error) {
     console.error('Failed to start server:', error);
