@@ -2,6 +2,9 @@ import { config } from './config';
 
 const VAPI_API_URL = 'https://api.vapi.ai';
 
+// Only sync sessions created after auto-sync was deployed (skip all pre-existing sessions)
+const SYNC_CUTOFF = '2026-02-27T00:30:00Z';
+
 // Track session IDs already pushed via backfill (persists across sync runs, resets on restart)
 const syncedSessionIds = new Set<string>();
 
@@ -172,6 +175,12 @@ export async function syncLeadsToSheets(): Promise<void> {
     let incomplete = 0;
 
     for (const session of sessions) {
+      // Skip old sessions created before auto-sync went live
+      if (session.createdAt < SYNC_CUTOFF) {
+        skipped++;
+        continue;
+      }
+
       // Skip sessions already pushed via backfill or that have a native Sheets append
       if (syncedSessionIds.has(session.id) || isAlreadySynced(session)) {
         skipped++;
