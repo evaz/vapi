@@ -2,6 +2,9 @@ import { config } from './config';
 
 const VAPI_API_URL = 'https://api.vapi.ai';
 
+// Track session IDs already pushed via backfill (persists across sync runs, resets on restart)
+const syncedSessionIds = new Set<string>();
+
 interface VapiSession {
   id: string;
   status: string;
@@ -169,8 +172,8 @@ export async function syncLeadsToSheets(): Promise<void> {
     let incomplete = 0;
 
     for (const session of sessions) {
-      // Skip sessions that already have a successful Sheets append
-      if (isAlreadySynced(session)) {
+      // Skip sessions already pushed via backfill or that have a native Sheets append
+      if (syncedSessionIds.has(session.id) || isAlreadySynced(session)) {
         skipped++;
         continue;
       }
@@ -185,6 +188,7 @@ export async function syncLeadsToSheets(): Promise<void> {
       // Push to Sheets
       const success = await pushLeadToSheets(session.id, lead);
       if (success) {
+        syncedSessionIds.add(session.id);
         console.log(`[SYNC] Pushed lead: ${lead.firstName} ${lead.lastName} (${lead.email})`);
         synced++;
       } else {
